@@ -1,5 +1,5 @@
 <template>
-  <button :class="['btn', variantClass]">
+  <button :class="['btn', variantClass]" @click="emit('click')">
     <span class="label">{{ text }}</span>
     <svg v-if="showArrow" class="arrow" viewBox="0 0 24 24" aria-hidden="true">
       <path
@@ -16,6 +16,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
+const emit = defineEmits(['click'])
 const props = defineProps({
   text: {
     type: String,

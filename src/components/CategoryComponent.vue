@@ -1,6 +1,6 @@
 <template>
   <div class="category-card" :style="{ backgroundColor: bgColor }">
-    <img :src="imageScr" :alt="title" />
+    <img :src="image" :alt="title" />
     <p class="title">{{ title }}</p>
     <p v-if="subtitle" class="subtitle">{{ subtitle }}</p>
   </div>
@@ -10,7 +10,7 @@
 defineProps({
   title: String,
   bgColor: String,
-  imageScr: String,
+  image: String,
   subtitle: String,
 })
 </script>

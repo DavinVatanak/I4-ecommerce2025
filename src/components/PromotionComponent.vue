@@ -2,24 +2,39 @@
   <div class="promo-card" :style="{ backgroundColor: bgColor }">
     <div class="text-content">
       <h2>{{ subtitle }}</h2>
-      <ButtonComponent :text="buttonText" :variant="buttonVariant"></ButtonComponent>
+      <ButtonComponent :text="buttonText" :variant="buttonVariant" @click="shopNow()" />
     </div>
-    <img :src="imageSrc" alt="subtitle" :class="['promo-image', imageClass]" />
+    <img :src="image" :alt="subtitle" :class="['promo-image', imageClass]" />
   </div>
 </template>
 
-<script setup lang="ts">
+<script lang="ts">
+import { defineComponent } from 'vue'
 import ButtonComponent from './ButtonComponent.vue'
 
-defineProps({
-  subtitle: String,
-  buttonText: String,
-  imageSrc: String,
-  bgColor: String,
-  buttonVariant: String,
-  imageClass: {
-    type: String,
-    default: '',
+export default defineComponent({
+  components: { ButtonComponent },
+
+  props: {
+    subtitle: String,
+    buttonText: String,
+    image: String,
+    bgColor: String,
+    buttonVariant: String,
+    imageClass: {
+      type: [String, Array, Object],
+      default: () => [],
+    },
+    promotion: {
+      type: Object,
+      required: true,
+    },
+  },
+  methods: {
+    shopNow() {
+      if (!this.promotion.title) return
+      alert("Let's shop: " + this.promotion.title)
+    },
   },
 })
 </script>
