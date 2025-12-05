@@ -9,12 +9,17 @@
 </template>
 
 <script lang="ts">
+interface Promotion {
+  title: string
+  url?: string
+}
+
 export default {
   name: 'PromotionComponent',
   props: ['promotion', 'title', 'color', 'image', 'buttonColor', 'url'],
 
   methods: {
-    shopNow(promo) {
+    shopNow(promo: Promotion) {
       if (!promo || !promo.title) return
       alert("Let's shop: " + promo.title)
       // in a real app: this.$router.push(promo.url)
@@ -62,21 +67,12 @@ export default {
   z-index: 0;
 }
 
-.promo-image.onion-image {
-  width: 100%;
-  height: 260px;
-  object-position: bottom right;
-}
-
-.promo-image.strawberry-milk-image {
-  width: 50%;
-  height: 260px;
-  object-position: bottom right;
-}
-
+.promo-image.onion-image,
+.promo-image.strawberry-milk-image,
 .promo-image.vegetable-pack-image {
-  width: 100%;
+  width: 70%;
   height: 260px;
   object-position: bottom right;
+  object-fit: contain;
 }
 </style>

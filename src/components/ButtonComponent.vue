@@ -2,13 +2,17 @@
   <button class="button" :style="{ backgroundColor: color }">{{ label }}</button>
 </template>
 
-<script>
+<script lang="ts">
 export default {
   name: 'ButtonComponent',
   props: {
     label: {
       type: String,
       required: true,
+    },
+    color: {
+      type: String,
+      default: 'green',
     },
   },
 }
