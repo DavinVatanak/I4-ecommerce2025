@@ -17,6 +17,7 @@
 <script lang="ts">
 import { mapState } from 'pinia'
 import { useProductStore } from '@/stores/products'
+import { useRouter } from 'vue-router'
 import axios from 'axios'
 
 export default {
@@ -26,6 +27,17 @@ export default {
       type: String,
       default: 'Group A',
     },
+  },
+  setup() {
+    const router = useRouter()
+
+    const navigateToCategory = (categoryId: number | string | undefined) => {
+      if (!categoryId) return
+      router.push(`/category/${categoryId}`)
+    }
+    return {
+      navigateToCategory
+    }
   },
   data() {
     return {
@@ -65,9 +77,33 @@ export default {
       group?: string
     }) {
       try {
-        const response = await axios.post('http://localhost:3000/api/categories', categoryData, {
+        // Create FormData for the request
+        const formData = new FormData()
+
+        // Add all category data to formData
+        Object.entries(categoryData).forEach(([key, value]) => {
+          // Skip the image field if it's a local path (we'll handle it separately)
+          if (key === 'image' && typeof value === 'string' && value.startsWith('/src/assets/')) {
+            return
+          }
+          // Map itemCount to productCount for the database
+          const fieldName = key === 'itemCount' ? 'productCount' : key
+          formData.append(fieldName, value)
+        })
+
+        // If the image is a local path, we need to fetch it as a blob first
+        if (categoryData.image && categoryData.image.startsWith('/src/assets/')) {
+          // For development, you might need to serve the assets through Vite's dev server
+          const imagePath = categoryData.image.replace('/src', '')
+          const response = await fetch(`http://localhost:5173${imagePath}`)
+          const blob = await response.blob()
+          const fileName = imagePath.split('/').pop() || 'category.jpg'
+          formData.append('image', blob, fileName)
+        }
+
+        const response = await axios.post('http://localhost:3000/api/categories', formData, {
           headers: {
-            'Content-Type': 'application/json',
+            'Content-Type': 'multipart/form-data',
           },
         })
 
@@ -147,39 +183,6 @@ export default {
       await this.postCategory(newCategory)
     },
 
-    // Post category with any image - flexible method
-    async postCategoryWithImage(
-      categoryName: string,
-      description: string,
-      imagePath: string,
-      color: string = '#4CAF50',
-      group: string = 'Group A',
-    ) {
-      try {
-        // First upload the image file
-        const store = useProductStore()
-        const imageImport = await import(`@/assets/images/${imagePath}`)
-        const imageFile = await store.importImageAsFile(imageImport.default, imagePath)
-        await store.postImage(imageFile, 'category_image')
-
-        // Then create the category
-        const categoryData = {
-          name: categoryName,
-          description: description,
-          image: imagePath,
-          color: color,
-          group: group,
-        }
-
-        const result = await this.postCategory(categoryData)
-        console.log(`Category '${categoryName}' created with image:`, result)
-        return result
-      } catch (error) {
-        console.error(`Failed to create category '${categoryName}':`, error)
-        throw error
-      }
-    },
-
     // Post category with JSON only (no image upload)
     async postCategoryOnly(
       categoryName: string,
@@ -206,29 +209,17 @@ export default {
       }
     },
 
-    // Generic method to post any category with any image
+    // Generic method to post a category
     async postAnyCategory(categoryData: {
       name: string
       description: string
       imagePath: string
       color?: string
       group?: string
-      uploadImage?: boolean
     }) {
-      const {
-        name,
-        description,
-        imagePath,
-        color = '#4CAF50',
-        group = 'Group A',
-        uploadImage = true,
-      } = categoryData
+      const { name, description, imagePath, color = '#4CAF50', group = 'Group A' } = categoryData
 
-      if (uploadImage) {
-        return await this.postCategoryWithImage(name, description, imagePath, color, group)
-      } else {
-        return await this.postCategoryOnly(name, description, imagePath, color, group)
-      }
+      return await this.postCategoryOnly(name, description, imagePath, color, group)
     },
   },
 }
